@@ -10,6 +10,12 @@ Parameters:
     Description: CodeStar projectId used to associate new resources to team members
 
 Resources:
+  CommuteTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: commute-traffic
+      TopicName: commute-traffic
+
   TrafficToSns:
     Type: AWS::Serverless::Function
     Properties:
@@ -18,6 +24,8 @@ Resources:
       Timeout: 30
       Policies:
         - AmazonSNSFullAccess
+      Environment:
+        SNS_TOPIC_ARN: !GetAtt CommuteTopic.Arn
       Events:
         GetEvent:
           Type: Api
@@ -29,3 +37,4 @@ Resources:
           Properties:
             Path: /
             Method: post
+  DependsOn: CommuteTopic
