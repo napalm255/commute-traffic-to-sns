@@ -1,7 +1,8 @@
+---
 AWSTemplateFormatVersion: 2010-09-09
 Transform:
-- AWS::Serverless-2016-10-31
-- AWS::CodeStar
+  - AWS::Serverless-2016-10-31
+  - AWS::CodeStar
 
 Parameters:
   ProjectId:
@@ -9,7 +10,7 @@ Parameters:
     Description: CodeStar projectId used to associate new resources to team members
 
 Resources:
-  HelloWorld:
+  TrafficToSns:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.handler
