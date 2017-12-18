@@ -9,8 +9,9 @@ import boto3
 SNS = boto3.client('sns')
 
 
-def get_duration(api_key, origin, destination):
-    """Get duration."""
+def get_commute_duration(api_key, origin, destination, **kwargs):
+    """Get commute duration."""
+    # pylint: disable=unused-argument
     url = 'https://maps.googleapis.com/maps/api/distancematrix/json?'
     url_data = ('units=imperial&'
                 'destinations=%s&'
@@ -34,22 +35,29 @@ def handler(event, context):
     logger.setLevel(logging.DEBUG)
     logger.info(event)
 
+    header = {'Content-Type': 'application/json'}
     body = json.loads(event['body'])
 
-    # vars
-    api_key = body['google_api']
-    topic_arn = body['topic_arn']
-    origin = body['origin']
-    destination = body['destination']
+    try:
+        var = {'sns_topic_arn': body['sns_topic_arn'],
+               'google_api_key': body['google_api_key'],
+               'origin': body['origin'],
+               'destination': body['origin']}
+    except KeyError:
+        return {'statusCode': 400,
+                'body': {'error': 'invalid input',
+                         'message': 'required fields: %s' % var.keys()},
+                'headers': header}
 
-    message = get_duration(api_key, origin, destination)
+    message = get_commute_duration(**var)
     logger.info(message)
 
     response = SNS.publish(
-        TopicArn=topic_arn,
+        TopicArn=var['topic_arn'],
         Message=json.dumps({'default': json.dumps(message)}),
         MessageStructure='json'
     )
+
     return {'statusCode': 200,
             'body': json.dumps(response),
-            'headers': {'Content-Type': 'application/json'}}
+            'headers': header}
