@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Commute Traffic to SNS."""
 
-from time import time
+from datetime import datetime
 import logging
 import os
 import json
@@ -23,7 +23,7 @@ def get_commute_duration(google_api_key, origin, destination, **kwargs):
     query = requests.get(url + url_data)
     results = query.json()
     details = results['rows'][0]['elements'][0]
-    data = {'timestamp': str(time()),
+    data = {'timestamp': str(datetime.utcnow().isoformat()),
             'origin': str(origin),
             'destination': str(destination)}
     data.update(details)
