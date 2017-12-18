@@ -24,8 +24,6 @@ Resources:
       Timeout: 30
       Policies:
         - AmazonSNSFullAccess
-      Environment:
-        SNS_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${CommuteTopic}
       Events:
         GetEvent:
           Type: Api
