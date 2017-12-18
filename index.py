@@ -1,6 +1,7 @@
 """Commute Traffic to SNS."""
 
 import logging
+import requests
 import json
 import boto3
 
