@@ -9,11 +9,11 @@ Parameters:
     Type: String
     Description: CodeStar projectId used to associate new resources to team members
 
-#  GoogleApiKey:
-#    Type: 'AWS::SSM::Parameter::Value<String>'
-#    NoEcho: true
-#    Description: Google API key from parameter store
-#    Default: google_api_key
+  GoogleApiKey:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    NoEcho: true
+    Description: Google API key from parameter store
+    Default: google_api_key
 
 Resources:
   CommuteTopic:
@@ -34,6 +34,7 @@ Resources:
       Environment:
         Variables:
           SNS_TOPIC_ARN: !Ref CommuteTopic
+          GOOGLE_API_KEY: !Ref GoogleApiKey
       Events:
         PostEvent:
           Type: Api
