@@ -12,7 +12,7 @@ Parameters:
   GoogleApiKey:
     Type: SSM
     Description: Google API key from parameter store
-    Value: google_api_key
+    Default: google_api_key
 
 Resources:
   CommuteTopic:
