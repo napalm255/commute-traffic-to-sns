@@ -18,6 +18,7 @@ Resources:
       Role:
         Fn::ImportValue:
           !Join ['-', [!Ref 'ProjectId', !Ref 'AWS::Region', 'LambdaTrustRole']]
+      AutoPublishAlias: commute-traffic-to-sns
       Events:
         GetEvent:
           Type: Api
