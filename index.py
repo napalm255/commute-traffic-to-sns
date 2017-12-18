@@ -53,11 +53,17 @@ def handler(event, context):
     message = get_commute_duration(**var)
     logger.info(message)
 
-    response = SNS.publish(
-        TopicArn=var['topic_arn'],
-        Message=json.dumps({'default': json.dumps(message)}),
-        MessageStructure='json'
-    )
+    try:
+        response = SNS.publish(
+            TopicArn=var['sns_topic_arn'],
+            Message=json.dumps({'default': json.dumps(message)}),
+            MessageStructure='json'
+        )
+    except KeyError:
+        return {'statusCode': 400,
+                'body': {'error': 'invalid input',
+                         'message': 'required fields: %s' % var.keys()},
+                'headers': header}
 
     return {'statusCode': 200,
             'body': json.dumps(response),
