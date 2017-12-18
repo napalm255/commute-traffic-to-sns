@@ -31,6 +31,8 @@ Resources:
       Timeout: 30
       Policies:
         - AmazonSNSFullAccess
+      Environment:
+        SNS_TOPIC_ARN: !Ref CommuteTopic
       Events:
         PostEvent:
           Type: Api
