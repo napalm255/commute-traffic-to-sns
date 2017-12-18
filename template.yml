@@ -31,8 +31,6 @@ Resources:
       Timeout: 30
       Policies:
         - AmazonSNSFullAccess
-      Environment:
-        GOOGLE_API_KEY: !Ref GoogleApiKey
       Events:
         PostEvent:
           Type: Api
