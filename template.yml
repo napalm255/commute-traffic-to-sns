@@ -16,9 +16,8 @@ Resources:
       Handler: index.handler
       Runtime: python2.7
       Timeout: 30
-      Role:
-        Fn::ImportValue:
-          !Join ['-', [!Ref 'ProjectId', !Ref 'AWS::Region', 'LambdaTrustRole']]
+      Policies:
+        - AmazonSNSFullAccess
       AutoPublishAlias: commute-traffic-to-sns
       Events:
         GetEvent:
