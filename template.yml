@@ -25,7 +25,7 @@ Resources:
       Policies:
         - AmazonSNSFullAccess
       Environment:
-        SNS_TOPIC_ARN: !GetAtt CommuteTopic.Arn
+        SNS_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${CommuteTopic.TopicName}
       Events:
         GetEvent:
           Type: Api
