@@ -48,8 +48,8 @@ def handler(event, context):
         logging.info(var)
     except KeyError:
         return {'statusCode': 400,
-                'body': {'error': 'invalid input',
-                         'message': 'required fields: %s' % var.keys()},
+                'body': {'status': 'ERROR',
+                         'message': 'invalid input. required fields: %s' % var.keys()},
                 'headers': header}
 
     message = get_commute_duration(**var)
@@ -63,10 +63,11 @@ def handler(event, context):
         )
     except KeyError:
         return {'statusCode': 400,
-                'body': {'error': 'invalid input',
-                         'message': 'required fields: %s' % var.keys()},
+                'body': {'status': 'ERROR',
+                         'message': 'invalid input. required fields: %s' % var.keys()},
                 'headers': header}
 
     return {'statusCode': 200,
-            'body': json.dumps(response),
+            'body': json.dumps({'status': 'OK',
+                                'message': response}),
             'headers': header}
