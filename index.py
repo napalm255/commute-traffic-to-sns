@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Commute Traffic to SNS."""
 
 from time import time
