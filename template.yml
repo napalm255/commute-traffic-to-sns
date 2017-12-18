@@ -32,7 +32,8 @@ Resources:
       Policies:
         - AmazonSNSFullAccess
       Environment:
-        SNS_TOPIC_ARN: !Ref CommuteTopic
+        Variables:
+          SNS_TOPIC_ARN: !Ref CommuteTopic
       Events:
         PostEvent:
           Type: Api
