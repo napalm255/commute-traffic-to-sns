@@ -25,6 +25,7 @@ Resources:
   TrafficToSns:
     Type: AWS::Serverless::Function
     Properties:
+      Description: Commute Traffic to SNS
       Handler: index.handler
       Runtime: python2.7
       Timeout: 30
