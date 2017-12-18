@@ -2,14 +2,14 @@
 
 from time import time
 import logging
-import requests
 import json
+import requests
 import boto3
 
 SNS = boto3.client('sns')
 
 
-def get_commute_duration(api_key, origin, destination, **kwargs):
+def get_commute_duration(google_api_key, origin, destination, **kwargs):
     """Get commute duration."""
     # pylint: disable=unused-argument
     url = 'https://maps.googleapis.com/maps/api/distancematrix/json?'
@@ -17,7 +17,7 @@ def get_commute_duration(api_key, origin, destination, **kwargs):
                 'destinations=%s&'
                 'origins=%s&'
                 'departure_time=now&'
-                'key=%s') % (destination, origin, api_key)
+                'key=%s') % (destination, origin, google_api_key)
     query = requests.get(url + url_data)
     results = query.json()
     details = results['rows'][0]['elements'][0]
@@ -42,7 +42,8 @@ def handler(event, context):
         var = {'sns_topic_arn': body['sns_topic_arn'],
                'google_api_key': body['google_api_key'],
                'origin': body['origin'],
-               'destination': body['origin']}
+               'destination': body['destination']}
+        logging.info(var)
     except KeyError:
         return {'statusCode': 400,
                 'body': {'error': 'invalid input',
