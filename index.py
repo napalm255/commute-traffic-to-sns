@@ -2,6 +2,7 @@
 
 from time import time
 import logging
+import os
 import json
 import requests
 import boto3
@@ -39,8 +40,8 @@ def handler(event, context):
     body = json.loads(event['body'])
 
     try:
-        var = {'sns_topic_arn': body['sns_topic_arn'],
-               'google_api_key': body['google_api_key'],
+        var = {'sns_topic_arn': os.environ['SNS_TOPIC_ARN'],
+               'google_api_key': os.environ['GOOGLE_API_KEY'],
                'origin': body['origin'],
                'destination': body['destination']}
         logging.info(var)
