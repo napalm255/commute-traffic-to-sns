@@ -34,6 +34,7 @@ Resources:
       Environment:
         Variables:
           SNS_TOPIC_ARN: !Ref CommuteTopic
+          GOOGLE_API_KEY: !GetAtt GoogleApiKey.Value
       Events:
         PostEvent:
           Type: Api
