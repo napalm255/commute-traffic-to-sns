@@ -9,6 +9,11 @@ Parameters:
     Type: String
     Description: CodeStar projectId used to associate new resources to team members
 
+  GoogleApiKey:
+    Type: SSM
+    Description: Google API key from parameter store
+    Value: google_api_key
+
 Resources:
   CommuteTopic:
     Type: AWS::SNS::Topic
@@ -35,4 +40,3 @@ Resources:
           Properties:
             Path: /
             Method: post
-  DependsOn: CommuteTopic
