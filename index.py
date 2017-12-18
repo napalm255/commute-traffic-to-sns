@@ -16,7 +16,7 @@ def handler(event, context):
     logger.info(event)
 
     # vars
-    topic_arn = event['topic_arn']
+    topic_arn = event['body']['topic_arn']
     message = {"foo": "bar"}
 
     logger.info(message)
