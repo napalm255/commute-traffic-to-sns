@@ -23,7 +23,7 @@ def get_commute_duration(google_api_key, origin, destination, **kwargs):
     query = requests.get(url + url_data)
     results = query.json()
     details = results['rows'][0]['elements'][0]
-    data = {'timestamp': str(datetime.utcnow().isoformat()),
+    data = {'timestamp': str(datetime.utcnow().strftime('%Y-%d-%m %H:%M:%S')),
             'origin': str(origin),
             'destination': str(destination)}
     data.update(details)
@@ -38,13 +38,17 @@ def handler(event, context):
     logger.info(event)
 
     header = {'Content-Type': 'application/json'}
-    body = json.loads(event['body'])
-
     try:
+        if isinstance(event['body'], dict):
+            logging.info('direct input')
+            body = event
+        elif isinstance(event['body'], unicode):
+            logging.info('api input')
+            body = json.loads(event['body'])
+
         var = {'sns_topic_arn': os.environ['SNS_TOPIC_ARN'],
                'google_api_key': os.environ['GOOGLE_API_KEY'],
-               'origin': body['origin'],
-               'destination': body['destination']}
+               'commute_routes': body['routes']}
         logging.info(var)
     except KeyError:
         return {'statusCode': 400,
@@ -52,22 +56,31 @@ def handler(event, context):
                          'message': 'invalid input. required fields: %s' % var.keys()},
                 'headers': header}
 
-    message = get_commute_duration(**var)
-    logger.info(message)
-
-    try:
-        response = SNS.publish(
-            TopicArn=var['sns_topic_arn'],
-            Message=json.dumps({'default': json.dumps(message)}),
-            MessageStructure='json'
-        )
-    except KeyError:
-        return {'statusCode': 400,
-                'body': {'status': 'ERROR',
-                         'message': 'invalid input. required fields: %s' % var.keys()},
-                'headers': header}
+    messages = list()
+    for name, route in var['commute_routes'].iteritems():
+        try:
+            message = get_commute_duration(google_api_key=var['google_api_key'],
+                                           origin=route['origin'],
+                                           destination=route['destination'])
+            logger.info(message)
+            response = SNS.publish(
+                TopicArn=var['sns_topic_arn'],
+                Message=json.dumps({'default': json.dumps(message)}),
+                MessageStructure='json'
+            )
+            messages.append({'statusCode': 200,
+                             'body': {'status': 'OK',
+                                      'response': response,
+                                      'message': message},
+                             'headers': header})
+        except:
+            messages.append({'statusCode': 400,
+                             'body': {'status': 'ERROR',
+                                      'response': response,
+                                      'message': message},
+                             'headers': header})
 
     return {'statusCode': 200,
             'body': json.dumps({'status': 'OK',
-                                'message': response}),
+                                'messages': messages}),
             'headers': header}
