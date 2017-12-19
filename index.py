@@ -59,24 +59,33 @@ def handler(event, context):
     messages = list()
     for name, route in var['commute_routes'].iteritems():
         try:
+            logging.info('route: %s', name)
+            # commute duration
+            logging.info('get commute duration')
             message = get_commute_duration(google_api_key=var['google_api_key'],
                                            origin=route['origin'],
                                            destination=route['destination'])
-            logger.info(message)
+            logging.info(message)
+            logging.info('recieved commute duration')
+            # publish message
+            logging.info('publish message')
             response = SNS.publish(
                 TopicArn=var['sns_topic_arn'],
                 Message=json.dumps({'default': json.dumps(message)}),
                 MessageStructure='json'
             )
+            logging.info('published message')
+            # log message details
             messages.append({'statusCode': 200,
                              'body': {'status': 'OK',
                                       'response': response,
                                       'message': message},
                              'headers': header})
-        except:
+        # pylint: disable=broad-except
+        except Exception as ex:
             messages.append({'statusCode': 400,
                              'body': {'status': 'ERROR',
-                                      'response': response,
+                                      'error': ex,
                                       'message': message},
                              'headers': header})
     logging.info(messages)
