@@ -44,7 +44,7 @@ Resources:
         Cron:
           Type: Schedule
           Properties:
-            Schedule: 'cron(0/5 * * * ? *)'
+            Schedule: 'cron(0/4 * * * ? *)'
             Input: !Ref CommuteRoutes
         PostEvent:
           Type: Api
