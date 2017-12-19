@@ -79,7 +79,7 @@ def handler(event, context):
                                       'response': response,
                                       'message': message},
                              'headers': header})
-
+    logging.info(messages)
     return {'statusCode': 200,
             'body': json.dumps({'status': 'OK',
                                 'messages': messages}),
