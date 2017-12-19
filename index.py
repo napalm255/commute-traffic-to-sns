@@ -41,7 +41,7 @@ def handler(event, context):
     try:
         if isinstance(event['body'], dict):
             logging.info('direct input')
-            body = event
+            body = event['body']
         elif isinstance(event['body'], unicode):
             logging.info('api input')
             body = json.loads(event['body'])
@@ -53,7 +53,7 @@ def handler(event, context):
     except KeyError:
         return {'statusCode': 400,
                 'body': {'status': 'ERROR',
-                         'message': 'invalid input. required fields: %s' % var.keys()},
+                         'message': 'invalid input'},
                 'headers': header}
 
     messages = list()
