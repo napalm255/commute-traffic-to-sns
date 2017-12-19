@@ -32,6 +32,7 @@ Resources:
       Description: Commute Traffic to SNS
       Handler: index.handler
       Runtime: python2.7
+      CodeUri: ./
       Timeout: 30
       Policies:
         - AmazonSNSFullAccess
