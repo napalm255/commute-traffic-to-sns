@@ -34,7 +34,7 @@ def handler(event, context):
     """Lambda handler."""
     # pylint: disable=unused-argument
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     logger.info(event)
 
     header = {'Content-Type': 'application/json'}
