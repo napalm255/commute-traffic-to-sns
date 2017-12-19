@@ -14,6 +14,10 @@ Parameters:
     NoEcho: true
     Description: Google API key from parameter store
     Default: google_api_key
+  CommuteRoutes:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Description: Routes in JSON
+    Default: commute_routes
 
 Resources:
   CommuteTopic:
@@ -36,6 +40,11 @@ Resources:
           SNS_TOPIC_ARN: !Ref CommuteTopic
           GOOGLE_API_KEY: !Ref GoogleApiKey
       Events:
+        Cron:
+          Type: Schedule
+          Properties:
+            Schedule: rate(5 minutes)
+            Input: !Ref CommuteRoutes
         PostEvent:
           Type: Api
           Properties:
