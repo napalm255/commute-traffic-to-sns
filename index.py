@@ -23,7 +23,7 @@ def get_commute_duration(google_api_key, origin, destination, **kwargs):
     query = requests.get(url + url_data)
     results = query.json()
     details = results['rows'][0]['elements'][0]
-    data = {'timestamp': str(datetime.utcnow().strftime('%Y-%d-%m %H:%M:%S')),
+    data = {'timestamp': str(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')),
             'origin': str(origin),
             'destination': str(destination)}
     data.update(details)
