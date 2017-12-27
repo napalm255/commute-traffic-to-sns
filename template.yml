@@ -25,7 +25,9 @@ Resources:
       CodeUri: ./
       Timeout: 30
       Policies:
+        - AWSLambdaBasicExecutionRole
         - AmazonSNSFullAccess
+        - AmazonSSMReadOnlyAccess
       Environment:
         Variables:
           SNS_TOPIC_ARN: !Ref CommuteTopic
