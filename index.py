@@ -13,7 +13,7 @@ import boto3
 
 
 # logging configuration
-logging.getLogger().setLevel(logging.DEBUG)
+logging.getLogger().setLevel(logging.INFO)
 
 try:
     SNS = boto3.client('sns')
