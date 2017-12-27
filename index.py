@@ -1,25 +1,88 @@
 #!/usr/bin/env python
 """Commute Traffic to SNS."""
+# pylint: disable=broad-except
 
-from datetime import datetime
-import logging
+from __future__ import print_function
+import sys
 import os
+import logging
 import json
+from datetime import datetime
 import requests
 import boto3
 
-SNS = boto3.client('sns')
+
+# logging configuration
+logging.getLogger().setLevel(logging.DEBUG)
+
+try:
+    SNS = boto3.client('sns')
+    SNS_TOPIC_ARN = os.environ['COMMUTE_SNS_TOPIC_ARN']
+    logging.info('sns: initialized sns client')
+except KeyError:
+    logging.error('sns: missing topic arn')
+except Exception as ex:
+    logging.error('sns: could not connect to SNS. (%s)', ex)
+    sys.exit()
+
+try:
+    SSM = boto3.client('ssm')
+
+    PREFIX = '/commute/config'
+    PARAMS = SSM.get_parameters_by_path(Path=PREFIX, Recursive=True,
+                                        WithDecryption=True)
+    logging.debug('ssm: parameters(%s)', PARAMS)
+
+    CONFIG = dict()
+    for param in PARAMS['Parameters']:
+        key = param['Name'].replace('%s/' % PREFIX, '')
+        CONFIG.update({key: param['Value']})
+    logging.debug('ssm: config(%s)', CONFIG)
+
+    logging.info('ssm: successfully gathered parameters')
+except Exception as ex:
+    logging.error('ssm: could not connect to SSM. (%s)', ex)
+    sys.exit()
+
+try:
+    # ensure google api key
+    assert 'google-api-key' in CONFIG
+    assert CONFIG['google-api-key']
+    # ensure routes
+    assert 'routes' in CONFIG
+    assert CONFIG['routes']
+    # load routes json string
+    CONFIG['routes'] = json.loads(CONFIG['routes'])
+except ValueError as ex:
+    logging.error('ssm: misconfigured routes. (%s)', ex)
+    sys.exit()
+except AssertionError as ex:
+    logging.error('ssm: missing parameters. (%s)', ex)
+    sys.exit()
 
 
-def get_commute_duration(google_api_key, origin, destination, **kwargs):
+def output(message, header=None, code=200):
+    """Return output object."""
+    logging.info('handler: output')
+    if not header:
+        header = {'Content-Type': 'application/json',
+                  'Access-Control-Allow-Origin': '*'}
+    logging.info('%s (%s)', message, header)
+    return {'statusCode': code,
+            'body': json.dumps({'status': 'OK',
+                                'message': message}),
+            'headers': header}
+
+
+def get_commute_duration(origin, destination):
     """Get commute duration."""
-    # pylint: disable=unused-argument
+    logging.info('get commute duration: start')
     url = 'https://maps.googleapis.com/maps/api/distancematrix/json?'
     url_data = ('units=imperial&'
                 'destinations=%s&'
                 'origins=%s&'
                 'departure_time=now&'
-                'key=%s') % (destination, origin, google_api_key)
+                'key=%s') % (destination, origin, CONFIG['google-api-key'])
     query = requests.get(url + url_data)
     results = query.json()
     details = results['rows'][0]['elements'][0]
@@ -27,69 +90,41 @@ def get_commute_duration(google_api_key, origin, destination, **kwargs):
             'origin': str(origin),
             'destination': str(destination)}
     data.update(details)
+    logging.info('get commute duration: end')
     return data
 
 
 def handler(event, context):
     """Lambda handler."""
     # pylint: disable=unused-argument
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    logger.info(event)
-
-    header = {'Content-Type': 'application/json'}
-    try:
-        if isinstance(event['body'], dict):
-            logging.info('direct input')
-            body = event['body']
-        elif isinstance(event['body'], unicode):
-            logging.info('api input')
-            body = json.loads(event['body'])
-
-        var = {'sns_topic_arn': os.environ['SNS_TOPIC_ARN'],
-               'google_api_key': os.environ['GOOGLE_API_KEY'],
-               'commute_routes': body['routes']}
-        logging.info(var)
-    except KeyError:
-        return {'statusCode': 400,
-                'body': {'status': 'ERROR',
-                         'message': 'invalid input'},
-                'headers': header}
+    logging.info('event: %s', event)
 
     messages = list()
-    for name, route in var['commute_routes'].iteritems():
+    for name, route in CONFIG['routes'].iteritems():
         try:
-            logging.info('route: %s', name)
+            logging.info('commute route name: %s', name)
+            logging.debug('commute route: %s;%s', route['origin'], route['destination'])
             # commute duration
-            logging.info('get commute duration')
-            message = get_commute_duration(google_api_key=var['google_api_key'],
-                                           origin=route['origin'],
+            message = get_commute_duration(origin=route['origin'],
                                            destination=route['destination'])
-            logging.info(message)
-            logging.info('recieved commute duration')
+            logging.debug('commute duration data: %s', message)
             # publish message
             logging.info('publish message')
             response = SNS.publish(
-                TopicArn=var['sns_topic_arn'],
+                TopicArn=SNS_TOPIC_ARN,
                 Message=json.dumps({'default': json.dumps(message)}),
                 MessageStructure='json'
             )
-            logging.info('published message')
+            logging.debug('message response: %s', response)
             # log message details
-            messages.append({'statusCode': 200,
-                             'body': {'status': 'OK',
-                                      'response': response,
-                                      'message': message},
-                             'headers': header})
-        # pylint: disable=broad-except
+            messages.append(output({'data': message, 'response': response}))
+            logging.info('publish message succeeded')
         except Exception as ex:
-            messages.append({'statusCode': 400,
-                             'body': {'status': 'ERROR',
-                                      'error': ex,
-                                      'message': message},
-                             'headers': header})
-    logging.info(messages)
-    return {'statusCode': 200,
-            'body': json.dumps({'status': 'OK',
-                                'messages': messages}),
-            'headers': header}
+            messages.append(output('publish message failed (%s)' % ex, code=400))
+
+    logging.debug(messages)
+    return output(messages)
+
+
+if __name__ == '__main__':
+    print(handler(None, None))

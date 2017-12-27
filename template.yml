@@ -9,16 +9,6 @@ Parameters:
     Type: String
     Description: CodeStar projectId used to associate new resources to team members
 
-  GoogleApiKey:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    NoEcho: true
-    Description: Google API key from parameter store
-    Default: google_api_key
-  CommuteRoutes:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Description: Routes in JSON
-    Default: commute_routes
-
 Resources:
   CommuteTopic:
     Type: AWS::SNS::Topic
@@ -39,15 +29,9 @@ Resources:
       Environment:
         Variables:
           SNS_TOPIC_ARN: !Ref CommuteTopic
-          GOOGLE_API_KEY: !Ref GoogleApiKey
       Events:
         Cron:
           Type: Schedule
           Properties:
             Schedule: 'cron(0/5 * * * ? *)'
-            Input: !Ref CommuteRoutes
-        PostEvent:
-          Type: Api
-          Properties:
-            Path: /
-            Method: post
+            Input: '{"trigger": "cloudwatch"}'
