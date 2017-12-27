@@ -68,7 +68,10 @@ def output(message, header=None, code=200):
     if not header:
         header = {'Content-Type': 'application/json',
                   'Access-Control-Allow-Origin': '*'}
-    logging.info('%s (%s)', message, header)
+    if code >= 400:
+        logging.error('%s (%s)', message, header)
+    else:
+        logging.debug('%s (%s)', message, header)
     return {'statusCode': code,
             'body': json.dumps({'status': 'OK',
                                 'message': message}),
