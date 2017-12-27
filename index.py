@@ -127,4 +127,4 @@ def handler(event, context):
 
 
 if __name__ == '__main__':
-    print(handler(None, None))
+    print(handler({"trigger": "cli"}, None))
