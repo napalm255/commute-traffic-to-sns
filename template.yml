@@ -30,7 +30,7 @@ Resources:
         - AmazonSSMReadOnlyAccess
       Environment:
         Variables:
-          SNS_TOPIC_ARN: !Ref CommuteTopic
+          COMMUTE_SNS_TOPIC_ARN: !Ref CommuteTopic
       Events:
         Cron:
           Type: Schedule

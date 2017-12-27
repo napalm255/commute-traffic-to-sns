@@ -21,6 +21,7 @@ try:
     logging.info('sns: initialized sns client')
 except KeyError:
     logging.error('sns: missing topic arn')
+    sys.exit()
 except Exception as ex:
     logging.error('sns: could not connect to SNS. (%s)', ex)
     sys.exit()
