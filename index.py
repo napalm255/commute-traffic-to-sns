@@ -104,7 +104,7 @@ def handler(event, context):
     logging.info('event: %s', event)
 
     messages = list()
-    for name, route in CONFIG['routes'].iteritems():
+    for name, route in CONFIG['routes'].items():
         try:
             logging.info('commute route name: %s', name)
             logging.debug('commute route: %s;%s', route['origin'], route['destination'])
