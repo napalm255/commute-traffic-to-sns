@@ -21,7 +21,7 @@ Resources:
     Properties:
       Description: Commute Traffic to SNS
       Handler: index.handler
-      Runtime: python2.7
+      Runtime: python3.6
       CodeUri: ./
       Timeout: 30
       Policies:
